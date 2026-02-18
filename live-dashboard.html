@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Twitch Chat Dashboard - valorant_emea2 LIVE</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    header {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 30px;
+      border-radius: 10px;
+      margin-bottom: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 2.5em;
+    }
+    .subtitle {
+      color: #666;
+      font-size: 1.1em;
+    }
+    .live-badge {
+      display: inline-block;
+      background: #FF6B6B;
+      color: white;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.8em;
+      font-weight: 600;
+      margin-left: 10px;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .stat-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .stat-number {
+      font-size: 2.5em;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .stat-label {
+      font-size: 0.9em;
+      opacity: 0.9;
+    }
+    .content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    .card {
+      background: white;
+      border-radius: 10px;
+      padding: 25px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+    .card h2 {
+      color: #333;
+      margin-bottom: 20px;
+      font-size: 1.5em;
+      border-bottom: 2px solid #667eea;
+      padding-bottom: 10px;
+    }
+    .topic-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid #eee;
+    }
+    .topic-item:last-child {
+      border-bottom: none;
+    }
+    .topic-name {
+      font-weight: 600;
+      color: #333;
+      flex: 1;
+    }
+    .topic-bar {
+      flex: 2;
+      height: 30px;
+      background: #f0f0f0;
+      border-radius: 15px;
+      margin: 0 15px;
+      overflow: hidden;
+    }
+    .topic-bar-fill {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 10px;
+      color: white;
+      font-weight: 600;
+      font-size: 0.9em;
+    }
+    .topic-count {
+      min-width: 40px;
+      text-align: right;
+      font-weight: 600;
+      color: #667eea;
+    }
+    .messages {
+      max-height: 600px;
+      overflow-y: auto;
+    }
+    .message-item {
+      padding: 12px;
+      margin-bottom: 10px;
+      border-left: 4px solid #ddd;
+      border-radius: 4px;
+      background: #f9f9f9;
+      font-size: 0.95em;
+    }
+    .message-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+    .message-user {
+      font-weight: 600;
+      color: #333;
+    }
+    .message-topic {
+      font-size: 0.8em;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 4px;
+      color: white;
+    }
+    .message-text {
+      color: #555;
+      margin-bottom: 5px;
+      word-wrap: break-word;
+    }
+    .message-time {
+      font-size: 0.8em;
+      color: #999;
+    }
+    .badge {
+      display: inline-block;
+      font-size: 0.7em;
+      padding: 2px 6px;
+      border-radius: 3px;
+      margin-left: 5px;
+      font-weight: 600;
+    }
+    .badge-mod {
+      background: #FF6B6B;
+      color: white;
+    }
+    .badge-vip {
+      background: #FFD93D;
+      color: #333;
+    }
+    .refresh-info {
+      text-align: center;
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 20px;
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 5px;
+    }
+    @media (max-width: 1024px) {
+      .content {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>📺 Twitch Chat Dashboard <span class="live-badge">● LIVE</span></h1>
+      <p class="subtitle">valorant_emea2 | Topic Clustering & Real-Time Analysis</p>
+      <div class="stats">
+        <div class="stat-card">
+          <div class="stat-number">20</div>
+          <div class="stat-label">Messages Captured</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">13</div>
+          <div class="stat-label">Unique Users</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">4</div>
+          <div class="stat-label">Topics Detected</div>
+        </div>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="card">
+        <h2>📊 Message Distribution by Topic</h2>
+        <div class="topic-item" style="opacity: 0.6"><div class="topic-name">Topic</div><div class="topic-bar"></div><div class="topic-count">Count</div></div>
+        <div class="topic-item">
+          <div class="topic-name">Gameplay Strategy</div>
+          <div class="topic-bar">
+            <div class="topic-bar-fill" style="width: 36.36363636363637%; background-color: #FF6B6B">
+              36%
+            </div>
+          </div>
+          <div class="topic-count">4</div>
+        </div>
+        <div class="topic-item">
+          <div class="topic-name">Memes/Spam</div>
+          <div class="topic-bar">
+            <div class="topic-bar-fill" style="width: 36.36363636363637%; background-color: #4ECDC4">
+              36%
+            </div>
+          </div>
+          <div class="topic-count">4</div>
+        </div>
+        <div class="topic-item">
+          <div class="topic-name">Shoutouts/Community</div>
+          <div class="topic-bar">
+            <div class="topic-bar-fill" style="width: 9.090909090909092%; background-color: #FFE66D">
+              
+            </div>
+          </div>
+          <div class="topic-count">1</div>
+        </div>
+        <div class="topic-item">
+          <div class="topic-name">Neutral/Chat</div>
+          <div class="topic-bar">
+            <div class="topic-bar-fill" style="width: 100%; background-color: #95E1D3">
+              100%
+            </div>
+          </div>
+          <div class="topic-count">11</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>💬 Live Messages (Latest First)</h2>
+        <div class="messages">
+          
+          <div class="message-item" style="border-left-color: #FF6B6B">
+            <div class="message-header">
+              <span class="message-user">
+                Support_eu
+                
+                
+              </span>
+              <span class="message-topic" style="background-color: #FF6B6B">Gameplay Strategy</span>
+            </div>
+            <div class="message-text">"@sonnavlr very interesting, especially when trans are playing"</div>
+            <div class="message-time">11:18:02 AM</div>
+          </div>
+          <div class="message-item" style="border-left-color: #95E1D3">
+            <div class="message-header">
+              <span class="message-user">
+                timonvlr
+                
+                
+              </span>
+              <span class="message-topic" style="background-color: #95E1D3">Neutral/Chat</span>
+            </div>
+            <div class="message-text">"@demolidorato nobody cares rn cuz we are watching ATN vs KC"</div>
+            <div class="message-time">11:18:00 AM</div>
+          </div>
+          <div class="message-item" style="border-left-color: #95E1D3">
+            <div class="message-header">
+              <span class="message-user">
+                sonnavlr
+                
+                
+              </span>
+              <span class="message-topic" style="background-color: #95E1D3">Neutral/Chat</span>
+            </div>
+            <div class="message-text">"@demolidorato GX"</div>
+            <div class="message-time">11:17:59 AM</div>
+          </div>
+          <div class="message-item" style="border-left-color: #95E1D3">
+            <div class="message-header">
+              <span class="message-user">
+                juniioRvlr
+                
+                
+              </span>
+              <span class="message-topic" style="background-color: #95E1D3">Neutral/Chat</span>
+            </div>
+            <div class="message-text">"@demolidorato g2"</div>
+            <div class="message-time">11:17:57 AM</div>
+          </div>
+          <div class="message-item" style="border-left-color: #95E1D3">
+            <div class="message-header">
+              <span class="message-user">
+                cloudyme3
+                
+                
+              </span>
+              <span class="message-topic" style="background-color: #95E1D3">Neutral/Chat</span>
+            </div>
+            <div class="message-text">"looking grim for ATN ngl ngl"</div>
+            <div class="message-time">11:17:47 AM</div>
+          </div>
+          <div class="message-item" style="border-left-color: #95E1D3">
+            <div class="message-header">
+              <span class="message-user">
+                timonvlr
+                
+                
+              </span>
+              <span class="message-topic" style="background-color: #95E1D3">Neutral/Chat</span>
+            </div>
+            <div class="message-text">"@sonnavlr +"</div>
+            <div class="message-time">11:17:46 AM</div>
+          </div>
+          <div class="message-item" style="border-left-color: #FF6B6B">
+            <div class="message-header">
+              <span class="message-user">
+                demolidorato
+                
+                
+              </span>
+              <span class="message-topic" style="background-color: #FF6B6B">Gameplay Strategy</span>
+            </div>
+            <div class="message-text">"In your opinion, who will win? Twisted Minds OrchidvsGIANTX GC"</div>
+            <div class="message-time">11:17:44 AM</div>
+          </div>
+          <div class="message-item" style="border-left-color: #95E1D3">
+            <div class="message-header">
+              <span class="message-user">
+                juniioRvlr
+                
+                
+              </span>
+              <span class="message-topic" style="background-color: #95E1D3">Neutral/Chat</span>
+            </div>
+            <div class="message-text">"+"</div>
+            <div class="message-time">11:17:41 AM</div>
+          </div>
+          <div class="message-item" style="border-left-color: #95E1D3">
+            <div class="message-header">
+              <span class="message-user">
+                juniioRvlr
+                
+                
+              </span>
+              <span class="message-topic" style="background-color: #95E1D3">Neutral/Chat</span>
+            </div>
+            <div class="message-text">"@sonnavlr ü"</div>
+            <div class="message-time">11:17:40 AM</div>
+          </div>
+          <div class="message-item" style="border-left-color: #FF6B6B">
+            <div class="message-header">
+              <span class="message-user">
+                suireiz
+                
+                
+              </span>
+              <span class="message-topic" style="background-color: #FF6B6B">Gameplay Strategy</span>
+            </div>
+            <div class="message-text">"Let's go I wanna see giantx"</div>
+            <div class="message-time">11:17:36 AM</div>
+          </div>
+          <div class="message-item" style="border-left-color: #FF6B6B">
+            <div class="message-header">
+              <span class="message-user">
+                pakbet1o
+                
+                
+              </span>
+              <span class="message-topic" style="background-color: #FF6B6B">Gameplay Strategy</span>
+            </div>
+            <div class="message-text">"they upload map hack thats why"</div>
+            <div class="message-time">11:17:35 AM</div>
+          </div>
+          <div class="message-item" style="border-left-color: #95E1D3">
+            <div class="message-header">
+              <span class="message-user">
+                sonnavlr
+                
+                
+              </span>
+              <span class="message-topic" style="background-color: #95E1D3">Neutral/Chat</span>
+            </div>
+            <div class="message-text">"i swear gamechanger chats are very interesting"</div>
+            <div class="message-time">11:17:34 AM</div>
+          </div>
+          <div class="message-item" style="border-left-color: #95E1D3">
+            <div class="message-header">
+              <span class="message-user">
+                hellerggm
+                
+                
+              </span>
+              <span class="message-topic" style="background-color: #95E1D3">Neutral/Chat</span>
+            </div>
+            <div class="message-text">"its not attacks"</div>
+            <div class="message-time">11:17:21 AM</div>
+          </div>
+          <div class="message-item" style="border-left-color: #4ECDC4">
+            <div class="message-header">
+              <span class="message-user">
+                pakbet1o
+                
+                
+              </span>
+              <span class="message-topic" style="background-color: #4ECDC4">Memes/Spam</span>
+            </div>
+            <div class="message-text">"ggs?"</div>
+            <div class="message-time">11:17:20 AM</div>
+          </div>
+          <div class="message-item" style="border-left-color: #95E1D3">
+            <div class="message-header">
+              <span class="message-user">
+                CarlettoPavoni
+                
+                
+              </span>
+              <span class="message-topic" style="background-color: #95E1D3">Neutral/Chat</span>
+            </div>
+            <div class="message-text">"Omg woman league looks like silver aversge game"</div>
+            <div class="message-time">11:17:19 AM</div>
+          </div>
+          <div class="message-item" style="border-left-color: #95E1D3">
+            <div class="message-header">
+              <span class="message-user">
+                icecolebrew
+                
+                
+              </span>
+              <span class="message-topic" style="background-color: #95E1D3">Neutral/Chat</span>
+            </div>
+            <div class="message-text">"Bellatrix main stage nerves, but does the job"</div>
+            <div class="message-time">11:17:12 AM</div>
+          </div>
+          <div class="message-item" style="border-left-color: #4ECDC4">
+            <div class="message-header">
+              <span class="message-user">
+                hellerggm
+                
+                
+              </span>
+              <span class="message-topic" style="background-color: #4ECDC4">Memes/Spam</span>
+            </div>
+            <div class="message-text">"gg noobs"</div>
+            <div class="message-time">11:17:07 AM</div>
+          </div>
+          <div class="message-item" style="border-left-color: #4ECDC4">
+            <div class="message-header">
+              <span class="message-user">
+                cloudyme3
+                
+                
+              </span>
+              <span class="message-topic" style="background-color: #4ECDC4">Memes/Spam</span>
+            </div>
+            <div class="message-text">"looking gg for ATN"</div>
+            <div class="message-time">11:17:05 AM</div>
+          </div>
+          <div class="message-item" style="border-left-color: #4ECDC4">
+            <div class="message-header">
+              <span class="message-user">
+                whait___
+                
+                
+              </span>
+              <span class="message-topic" style="background-color: #4ECDC4">Memes/Spam</span>
+            </div>
+            <div class="message-text">"LUL"</div>
+            <div class="message-time">11:17:03 AM</div>
+          </div>
+          <div class="message-item" style="border-left-color: #FFE66D">
+            <div class="message-header">
+              <span class="message-user">
+                beatrixg2
+                
+                
+              </span>
+              <span class="message-topic" style="background-color: #FFE66D">Shoutouts/Community</span>
+            </div>
+            <div class="message-text">"@StephanoVLR heyyyyy"</div>
+            <div class="message-time">11:17:01 AM</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="refresh-info">
+      ⚙️ Auto-refresh the page to see new messages • Logging to <code>twitch_chat_1771442220556.jsonl</code>
+    </div>
+  </div>
+  <script>
+    // Auto-refresh every 30 seconds
+    setTimeout(() => location.reload(), 30000);
+  </script>
+</body>
+</html>
