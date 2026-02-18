@@ -1,0 +1,24 @@
+{
+  "name": "twitch-chat-dashboard",
+  "version": "1.0.0",
+  "description": "Real-time Twitch chat logger with topic clustering and interactive dashboard",
+  "main": "twitch-logger.js",
+  "scripts": {
+    "start": "node twitch-logger.js",
+    "build": "node build-dashboard.js",
+    "log": "node twitch-logger.js"
+  },
+  "keywords": [
+    "twitch",
+    "chat",
+    "logger",
+    "analytics",
+    "clustering",
+    "dashboard"
+  ],
+  "author": "Fluffy",
+  "license": "MIT",
+  "dependencies": {
+    "tmi.js": "^1.8.5"
+  }
+}
